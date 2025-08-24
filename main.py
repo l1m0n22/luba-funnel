@@ -55,6 +55,8 @@ def msg2(link: str) -> str:
 MSG3 = "Tabriklaymiz! 🎉 Arizangiz qabul qilindi. Tez orada menejerimiz Siz bilan bog‘lanadi."
 MSG4 = "Eslatma: anketani hali to‘ldirmadingiz. ⏳ Joylar soni cheklangan."
 MSG5 = "Oxirgi eslatma! 🚨 Faqat bir nechta joy qoldi. Qulay paytda to‘ldiring."
+async def healthz(_request: web.Request):
+    return web.Response(text="ok")
 
 # ===== подпись и ссылки =====
 def _b64url(b: bytes) -> str:
@@ -220,16 +222,25 @@ async def submitted_handler(request: web.Request):
 
     return web.json_response({"ok": True})
 
+# ... (весь твой код без изменений выше)
+
 async def start_web(ptb_app: Application) -> web.AppRunner:
     app = web.Application()
     app["ptb_app"] = ptb_app
     app.add_routes([
+        web.get("/healthz", healthz),                 # для Render Health Check
         web.get("/go", go_handler),
-        web.post("/submitted", submitted_handler),
+        web.post("/submitted", submitted_handler),    # форма уведомляет об отправке
+        # web.post("/mark-submitted", mark_submitted) # <- УДАЛЕНО: нет такой функции
     ])
-    runner = web.AppRunner(app); await runner.setup()
-    site = web.TCPSite(runner, host="0.0.0.0", port=int(os.getenv("PORT","8080"))); await site.start()
+    port = int(os.getenv("PORT", "8080"))
+    runner = web.AppRunner(app)
+    await runner.setup()
+    site = web.TCPSite(runner, host="0.0.0.0", port=port)
+    await site.start()
     return runner
+
+# ... (entrypoint как у тебя)
 
 # ===== entrypoint =====
 async def main_async():
