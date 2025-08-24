@@ -1,4 +1,4 @@
 ﻿python-telegram-bot==20.7
 aiohttp==3.9.5
-Pillow==10.3.0
+Pillow==11.0.0
 python-dotenv==1.0.1
